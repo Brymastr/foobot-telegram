@@ -1,38 +1,38 @@
 const 
-  config = require('./config'),
+  config = require('./config')(),
   rabbit = require('amqplib');
 
-const connection = rabbit.connect(config.rabbit_url);
-
-// Publish to RabbitMQ with a given topic
-exports.pub = (topic, message) => {
+// Subscribe messages from RabbitMQ
+exports.sub = (connection, queue) => {
   return new Promise((resolve, reject) => {
-    connection
-      .then(conn => conn.createChannel())
+    connection.createChannel()
       .then(channel => {
-        return channel.checkExchange('foobot', 'topic', {durable: true}).then(ok => {
-          return channel.publish(topic, new Buffer(message.text));
+        return channel.consume(queue, message => {
+          if(!message.consumerTag) channel.ack(message);
+          resolve(message);
         });
       })
-      .then(() => resolve(message))
-      .catch(reject);
-  })
-}
+  });
+};
 
-// Subscribe messages with a given topic from RabbitMQ
-exports.sub = topic => {
+// Listen for url on queue
+exports.bindIncomingQueue = () => {
   return new Promise((resolve, reject) => {
-    connection
-      .then(conn => conn.createChannel())
-      .then(channel => {
-        return channel.checkExchange(topic).then(ok => {
-          return channel.consume(topic, msg => {
-            console.log(`Message dequeued: ${msg.content.toString()}`);
-            channel.ack(msg);
-          });
+    rabbit.connect(config.rabbit_url).then(connection => {
+      return connection.createChannel()
+        .then(channel => {
+          channel.assertQueue(config.rabbit_queue);
+          return channel;
         })
-      })
-      .then(resolve)
-      .catch(reject);
-  });   
+        .then(channel => {
+          channel.bindQueue(config.rabbit_queue, config.rabbit_exchange, 'incoming.message.telegram');
+          return channel;
+        })
+        .then(channel => {
+          // channel.close();
+          return connection;
+        })
+        .then(resolve);
+      });
+  });
 };
