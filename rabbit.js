@@ -2,28 +2,33 @@ const
   config = require('./config')(),
   rabbit = require('amqplib');
 
-var connection;
-
-exports.init = () => {
+exports.init = (queues) => {
   return new Promise((resolve, reject) => {
     this.connect()
-      .then(() => this.createChannel())
+      .then(connection => connection.createChannel())
       .then(channel => {
-        return channel.assertQueue(config.rabbit_telegram_queue)
-          .then(queue => channel.bindQueue(queue.queue, config.rabbit_exchange, 'incoming.message.telegram'))
-          .then(queue => channel.close());
+        let promises = [];
+        queues.forEach((routeKey, queueName) => {
+          promises.push(this.queuePromise(channel, queueName, routeKey));
+        });
+        return Promise.all(promises).then(() => channel);
       })
+      .then(channel => channel.close())
       .then(resolve);
   });
 }
 
+this.queuePromise = (channel, name, key) => {
+  return new Promise(resolve => {
+    channel.assertQueue(name)
+      .then(queue => channel.bindQueue(queue.queue, config.rabbit_exchange, key)
+      .then(resolve));
+  });
+};
+
 exports.connect = () => {
   return new Promise((resolve, reject) => {
-    rabbit.connect(config.rabbit_url).then(conn => {
-      console.log('Rabbit connected');
-      connection = conn;
-      resolve();
-    });
+    rabbit.connect(config.rabbit_url).then(resolve);
   });
 };
 

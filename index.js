@@ -1,25 +1,18 @@
 const 
   Message = require('./Message'),
   config = require('./config')(),
-  // rabbit = require('amqplib'),
   rabbit = require('./rabbit'),
-  telegram = require('./telegram');
+  telegram = require('./telegram'),
+  fork = require('child_process').fork;
 
-rabbit.init().then(() => {
-  rabbit.createChannel().then(channel => {
-    channel.consume(config.rabbit_telegram_queue, message => {
-      if(!message.consumerTag) channel.ack(message);
-      process(JSON.parse(message.content.toString()));
-    });
+var queues = new Map();
+queues.set('telegram incoming', 'incoming.message.telegram');
+queues.set('telegram outgoing', 'outgoing.message.telegram');
+
+// Remember to fetch the foobot url and info from the core GET /info/url
+rabbit.init(queues).then(() => {
+  queues.forEach((value, key) => {
+    console.log(`Subscriber starting for ${value} queue`)
+    fork(__dirname + '/subscribe', [key], {silent: false, stdio: 'pipe'});
   });
 });
-
-// Subscribe to telegram queue
-
-
-function process(update) {
-  telegram.normalize(update).then(message => {
-    console.log(message.text);
-    return rabbit.pub(`internal.message.nlp`, message);
-  });
-}

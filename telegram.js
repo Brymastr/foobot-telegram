@@ -1,7 +1,7 @@
-'use strict';
-
 const
- request = require('request-promise');
+ request = require('request-promise'),
+ config = require('./config'),
+ rabbit = require('./rabbit');
 
 
 // Send a message
@@ -79,6 +79,17 @@ exports.leaveChat = chat_id => {
   });
 };
 
+exports.process = message => {
+  // I guess you gotta figure out what needs to be done with the message just pulled off a queue (any queue)
+  if(message.normalized) {
+    // send response
+  } else {
+    this.normalize(message).then(m => { // this is a temporary, non generic example
+      rabbit.pub(config.rabbit_internal_queue, m);
+    });
+  }
+}
+
 
 // Make the message into a local message without nulls
 exports.normalize = update => {
@@ -115,6 +126,8 @@ exports.normalize = update => {
 
   if(!message.text)
     message.text = '';
+
+  message.normalized = true;
 
   return Promise.resolve(message);
 }
