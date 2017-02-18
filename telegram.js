@@ -81,10 +81,10 @@ exports.leaveChat = chat_id => {
 
 
 // Make the message into a local message without nulls
-exports.conform = update => {
-  let message = new Message({
+exports.normalize = update => {
+  let message = {
     update_id: update.update_id
-  });
+  };
   if(update.edited_message) {
     message.message_id = update.edited_message.message_id;
     message.date = update.edited_message.date;
@@ -116,5 +116,5 @@ exports.conform = update => {
   if(!message.text)
     message.text = '';
 
-  return message;
+  return Promise.resolve(message);
 }

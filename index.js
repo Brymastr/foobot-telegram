@@ -1,22 +1,25 @@
 const 
   Message = require('./Message'),
   config = require('./config')(),
-  rabbit = require('amqplib'),
+  // rabbit = require('amqplib'),
+  rabbit = require('./rabbit'),
   telegram = require('./telegram');
 
-rabbit.connect(config.rabbit_url)
-  .then(connection => connection.createChannel())
-  .then(channel => {
-    return channel.assertQueue(config.rabbit_queue)
-      .then(q => {
-        channel.bindQueue(q.queue, config.rabbit_exchange, 'incoming.message.telegram')
-        return q.queue;
-      })
-      .then(queue => channel.consume(queue, message => {
-        write(message);
-      }));
+rabbit.init().then(() => {
+  rabbit.createChannel().then(channel => {
+    channel.consume(config.rabbit_telegram_queue, message => {
+      if(!message.consumerTag) channel.ack(message);
+      process(JSON.parse(message.content.toString()));
+    });
   });
+});
 
-function write(message) {
-  console.log(message.content.toString());
+// Subscribe to telegram queue
+
+
+function process(update) {
+  telegram.normalize(update).then(message => {
+    console.log(message.text);
+    return rabbit.pub(`internal.message.nlp`, message);
+  });
 }

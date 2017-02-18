@@ -2,37 +2,49 @@ const
   config = require('./config')(),
   rabbit = require('amqplib');
 
-// Subscribe messages from RabbitMQ
-exports.sub = (connection, queue) => {
+var connection;
+
+exports.init = () => {
   return new Promise((resolve, reject) => {
-    connection.createChannel()
+    this.connect()
+      .then(() => this.createChannel())
       .then(channel => {
-        return channel.consume(queue, message => {
-          if(!message.consumerTag) channel.ack(message);
-          resolve(message);
-        });
+        return channel.assertQueue(config.rabbit_telegram_queue)
+          .then(queue => channel.bindQueue(queue.queue, config.rabbit_exchange, 'incoming.message.telegram'))
+          .then(queue => channel.close());
       })
+      .then(resolve);
+  });
+}
+
+exports.connect = () => {
+  return new Promise((resolve, reject) => {
+    rabbit.connect(config.rabbit_url).then(conn => {
+      console.log('Rabbit connected');
+      connection = conn;
+      resolve();
+    });
   });
 };
 
-// Listen for url on queue
-exports.bindIncomingQueue = () => {
+exports.createChannel = () => Promise.resolve(connection.createChannel());
+
+// Subscribe messages from RabbitMQ
+exports.sub = (channel, queue) => {
   return new Promise((resolve, reject) => {
-    rabbit.connect(config.rabbit_url).then(connection => {
-      return connection.createChannel()
-        .then(channel => {
-          channel.assertQueue(config.rabbit_queue);
-          return channel;
-        })
-        .then(channel => {
-          channel.bindQueue(config.rabbit_queue, config.rabbit_exchange, 'incoming.message.telegram');
-          return channel;
-        })
-        .then(channel => {
-          // channel.close();
-          return connection;
-        })
-        .then(resolve);
-      });
+    channel.consume(queue, message => {
+      if(!message.consumerTag) channel.ack(message);
+      resolve(JSON.parse(message.content.toString()));
+    });
   });
 };
+
+// Publish to RabbitMQ with a given topic
+exports.pub = (routingKey, message) => {
+  return new Promise((resolve, reject) => {
+    this.createChannel().then(channel => {
+      channel.publish(config.rabbit_exchange_name, routingKey, new Buffer(JSON.stringify(message)))
+      return channel.close();
+    }).then(resolve);
+  });
+}
