@@ -32,22 +32,10 @@ exports.connect = () => {
   });
 };
 
-exports.createChannel = () => Promise.resolve(connection.createChannel());
-
-// Subscribe messages from RabbitMQ
-exports.sub = (channel, queue) => {
-  return new Promise((resolve, reject) => {
-    channel.consume(queue, message => {
-      if(!message.consumerTag) channel.ack(message);
-      resolve(JSON.parse(message.content.toString()));
-    });
-  });
-};
-
 // Publish to RabbitMQ with a given topic
-exports.pub = (routingKey, message) => {
+exports.pub = (connection, routingKey, message) => {
   return new Promise((resolve, reject) => {
-    this.createChannel().then(channel => {
+    connection.createChannel().then(channel => {
       channel.publish(config.rabbit_exchange_name, routingKey, new Buffer(JSON.stringify(message)))
       return channel.close();
     }).then(resolve);

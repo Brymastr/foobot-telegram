@@ -1,11 +1,16 @@
 const
  request = require('request-promise'),
- config = require('./config'),
  rabbit = require('./rabbit');
 
+// Send with typing
+exports.send = message => new Promise(resolve => {
+  this.sendTyping(message)
+    .then(() => this.sendMessage(message))
+    .then(resolve);
+});
 
 // Send a message
-exports.sendMessage = (message, done) => {
+exports.sendMessage = message => new Promise(resolve => {
   request.post(`${config.telegram_url}${config.telegram_token}/sendMessage`, {
     json: {
       chat_id: message.chat_id,
@@ -14,22 +19,22 @@ exports.sendMessage = (message, done) => {
       reply_to_message_id: message.reply_to,
       parse_mode: 'Markdown'
     }
-  }).then(body => {
-    done(body);
-  }).catch(console.warn);
-};
+  })
+  .then(resolve)
+  .catch(console.warn);
+});
 
-exports.sendTyping = (message, done) => {
+exports.sendTyping = message=> new Promise((resolve, reject) => {
   request.post(`${config.telegram.url}${config.telegram.token}/sendChatAction`, {
     json: {
       chat_id: message.chat_id,
       action: 'typing'
     }
-  }, (err, response, body) => {
-    if(err) log.error(err);
-    done(body);
+  }).then(body => {
+    if(err) reject(err);
+    else resolve();
   });  
-};
+});
 
 exports.editMessage = (message, done) => {
   request.post(`${config.telegram.url}${config.telegram.token}/editMessageText`, {
@@ -46,46 +51,37 @@ exports.editMessage = (message, done) => {
 }
 
 // Set the webhook so that messages are sent to this api
-exports.setWebhook = () => {
+exports.setWebhook = address => new Promise((resolve, reject) => {
   let formData;
-  const url = `${config.url}/webhook/telegram/${config.route_token}`;
-  try {
-    formData = {
-      url: url,
-      certificate: fs.readFileSync(config.cert_path)
-    };
-  } catch(err) {
-    formData = {
-      url: url
-    };
-  }
+  const url = `${address.url}/webhook/telegram/${address.route_token}`;
+  
   request.post({
     url: `${config.telegram_url}${config.telegram_token}/setWebhook?allowed_updates=["message", "edited_message", "callback_query"]`,
-    formData: formData
-  }, (err, response, body) => {
-    if(err || body.error_code) log.error(err);
-    log.info(`Telegram webhook set: ${url}`);
+    formData: {url}
+  }).then(body => {
+    console.log(`Telegram webhook set: ${url}`);
+    resolve(body);
+  }).catch(err => {
+    console.error(err);
+    reject(err);
   });
   
-};
+});
 
-exports.leaveChat = chat_id => {
-  return new Promise((resolve, reject) => {
-    request.post(`${config.telegram_url}${config.telegram_token}/leaveChat`, {
-      json: { chat_id }
-    })
-      .then(resolve)
-      .catch(reject)
-  });
-};
+exports.leaveChat = chat_id => new Promise((resolve, reject) => {
+  request.post(`${config.telegram_url}${config.telegram_token}/leaveChat`, {
+    json: { chat_id }
+  })
+    .then(resolve)
+    .catch(reject)
+});
 
-exports.process = message => {
-  // I guess you gotta figure out what needs to be done with the message just pulled off a queue (any queue)
+exports.process = (connection, message) => {
   if(message.normalized) {
-    // send response
+    this.send(message, config);
   } else {
-    this.normalize(message).then(m => { // this is a temporary, non generic example
-      rabbit.pub(config.rabbit_internal_queue, m);
+    this.normalize(message, config).then(m => { // this is a temporary, non generic example
+      rabbit.pub(connection, config.rabbit_internal_queue, m);
     });
   }
 }
