@@ -1,7 +1,7 @@
 module.exports = () => {
   const env = process.env;
   return config = {
-    telegram_token: env.FOOBOT_TELEGRAM_TOKEN,
+    telegram_token: env.FOOBOT_TELEGRAM_TOKEN || '223951341:AAEGPjH0RgqtAwF2fjXRYQ41-hHGalPHOck',
     db: env.FOOBOT_DB_CONN || 'mongdb://localhost',
     rabbit_url: env.FOOBOT_RABBIT_QUEUE || 'amqp://localhost',
     rabbit_exchange: 'foobot',
