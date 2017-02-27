@@ -4,6 +4,7 @@ const
 
 // Send with typing
 exports.send = message => new Promise(resolve => {
+  console.log('send message', message.text)
   this.sendTyping(message)
     .then(() => this.sendMessage(message))
     .then(resolve);
@@ -24,20 +25,22 @@ exports.sendMessage = message => new Promise(resolve => {
   .catch(console.warn);
 });
 
-exports.sendTyping = message=> new Promise((resolve, reject) => {
-  request.post(`${config.telegram.url}${config.telegram.token}/sendChatAction`, {
+exports.sendTyping = message => new Promise((resolve, reject) => {
+  request.post(`${config.telegram_url}${config.telegram_token}/sendChatAction`, {
     json: {
       chat_id: message.chat_id,
       action: 'typing'
     }
   }).then(body => {
-    if(err) reject(err);
-    else resolve();
+    let length = message.response.length;
+    let delay = Math.random() * 2;
+    let timeout = (0.02 * length + delay) * 1000;
+    setTimeout(resolve, timeout);
   });  
 });
 
 exports.editMessage = (message, done) => {
-  request.post(`${config.telegram.url}${config.telegram.token}/editMessageText`, {
+  request.post(`${config.telegram_url}${config.telegram_token}/editMessageText`, {
     json: {
       chat_id: message.chat_id,
       text: message.text,
@@ -56,7 +59,7 @@ exports.setWebhook = address => new Promise((resolve, reject) => {
   const url = `${address.url}/webhook/telegram/${address.route_token}`;
   
   request.post({
-    url: `${config.telegram_url}${config.telegram_token}/setWebhook?allowed_updates=["message", "edited_message", "callback_query"]`,
+    url: `${config.telegram_url}${config.telegram_token}/setWebhook?allowed_updates=["message", "edited_message"]`,
     formData: {url}
   }).then(body => {
     console.log(`Telegram webhook set: ${url}`);
@@ -77,10 +80,11 @@ exports.leaveChat = chat_id => new Promise((resolve, reject) => {
 });
 
 exports.process = (connection, message) => {
-  if(message.normalized) {
-    this.send(message, config);
+  if(message._id) {
+    if(message.response || message.keyboard.length > 0)
+      this.send(message);
   } else {
-    this.normalize(message, config).then(m => { // this is a temporary, non generic example
+    this.normalize(message).then(m => {
       rabbit.pub(connection, config.rabbit_internal_queue, m);
     });
   }
@@ -90,40 +94,29 @@ exports.process = (connection, message) => {
 // Make the message into a local message without nulls
 exports.normalize = update => {
   let message = {
-    update_id: update.update_id
+    update_id: update.update_id,
+    text: '',
+    source: 'telegram'
   };
   if(update.edited_message) {
-    message.message_id = update.edited_message.message_id;
-    message.date = update.edited_message.date;
-    message.platform_from = update.edited_message.from;
-    message.chat_id = update.edited_message.chat.id;
-    message.chat_name = update.edited_message.chat.first_name;
-    message.action = 'edit';
-  } else if(update.message) {
-    message.message_id = update.message.message_id;
-    message.date = update.message.date;
-    message.platform_from = update.message.from;
-    message.chat_id = update.message.chat.id;
-    message.chat_name = update.message.chat.first_name;
-    message.text = update.message.text;
-    if(update.message.contact) {
-      message.text = update.message.contact.phone_number;
-      message.action = 'contact';
-      message.other = {contact_telegram_id: update.message.contact.user_id}
-    }
-  } else if(update.callback_query) {
-    message.message_id = update.callback_query.message.message_id;
-    message.platform_from = update.callback_query.from;
-    message.chat_id = update.callback_query.message.chat.id;
-    message.chat_name = update.callback_query.message.chat.first_name;
-    message.text = update.callback_query.message.text;
-    message.action = update.callback_query.data;
+    update = update.edited_message;
+    action = 'edit';
   }
+  else if(update.message) update = update.message;
 
-  if(!message.text)
-    message.text = '';
-
-  message.normalized = true;
+  message.message_id = update.message_id;
+  message.date = update.date;
+  message.platform_from = update.from;
+  message.text = update.text;
+  if(update.chat) {
+    message.chat_id = update.chat.id;
+    message.chat_name = update.chat.first_name;
+  }
+  if(update.contact) {
+    message.text = update.contact.phone_number;
+    message.action = 'contact';
+    message.other = {contact_telegram_id: update.contact.user_id}
+  }
 
   return Promise.resolve(message);
 }
