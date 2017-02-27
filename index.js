@@ -42,5 +42,5 @@ function retry(promise, attempts, interval) {
             return retry(promise, --attempts, interval).then(resolve);
           }, interval);
       });
-  })
+  });
 }

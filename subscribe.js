@@ -10,8 +10,8 @@ rabbit.connect().then(connection => {
     channel.consume(queue, message => {
       if(!message.consumerTag) channel.ack(message);
       message = JSON.parse(message.content.toString());
-      console.log(message.message.text);
+      // console.log('Subscribe message.', queue);
       telegram.process(connection, message);
-    })
+    });
   });
 });
