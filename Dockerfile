@@ -6,4 +6,4 @@ COPY . /src
 RUN npm i
 
 EXPOSE 80
-CMD ["npm", "start"]
+CMD ["./wait-for-it.sh", "--strict", "core:80", "--", "npm", "start"]
