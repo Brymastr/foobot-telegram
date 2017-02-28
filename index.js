@@ -17,7 +17,7 @@ const start = () => {
       fork(__dirname + '/subscribe', [key], {silent: false, stdio: 'pipe'});
     });
   });
-}
+};
 
 const getUrl = () => request.get(config.foobot_core_url + '/info/webhook');
 
