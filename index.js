@@ -19,7 +19,28 @@ const start = () => {
   });
 }
 
-// Remember to fetch the foobot url and info from the core GET /info/url
-request.get(config.foobot_core_url + '/info/webhook', null)
-  .then(body => telegram.setWebhook(JSON.parse(body)))
-  .then(() => start());
+const getUrl = () => request.get(config.foobot_core_url + '/info/webhook');
+
+retry(getUrl, 10, 1000)
+  .then(address => telegram.setWebhook(address))
+  .then(() => start())
+
+function retry(promise, attempts, interval) {
+  return new Promise((resolve, reject) => {
+    promise()
+      .then(body => {
+        body = JSON.parse(body);
+        if(body.url) resolve(body);
+        else throw 'no url';
+        resolve(body);
+      })
+      .catch(err => {
+        if(attempts === 0) console.warn('Could not connect to foobot');
+        else 
+          setTimeout(() => {
+            console.log(`Error connecting to foobot: attempt ${11-attempts}/10`);
+            return retry(promise, --attempts, interval).then(resolve);
+          }, interval);
+      });
+  });
+}
