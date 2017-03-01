@@ -4,6 +4,7 @@ WORKDIR /src
 COPY . /src
 
 RUN npm i --only=production && \
+  apk add bash bash-doc bash-completion && \
   chmod 775 wait-for-it.sh
 
 EXPOSE 80
