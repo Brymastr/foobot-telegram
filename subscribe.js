@@ -1,8 +1,10 @@
 const
+  config = require('./config')(),
   rabbit = require('./rabbit'),
   telegram = require('./telegram'),
-  config = require('./config')(),
   queue = process.argv[2];
+
+console.dir(config)
 
 rabbit.connect().then(connection => {
   return connection.createChannel().then(channel => {

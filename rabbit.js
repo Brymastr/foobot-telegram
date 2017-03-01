@@ -1,10 +1,10 @@
 const 
-  config = require('./config')(),
+  config = require('./config'),
   rabbit = require('amqplib');
 
 exports.init = queues => {
   return new Promise((resolve, reject) => {
-    this.connect()
+    this.connect
       .then(connection => connection.createChannel())
       .then(channel => {
         let promises = [];
@@ -26,11 +26,7 @@ this.queuePromise = (channel, name, key) => {
   });
 };
 
-exports.connect = () => {
-  return new Promise((resolve, reject) => {
-    rabbit.connect(config.rabbit_url).then(resolve);
-  });
-};
+exports.connect = rabbit.connect(config.rabbit_url);
 
 // Publish to RabbitMQ with a given topic
 exports.pub = (connection, routingKey, message) => {
