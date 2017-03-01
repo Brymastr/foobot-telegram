@@ -6,7 +6,6 @@ const
   fork = require('child_process').fork,
   request = require('request-promise');
 
-console.dir(config)
 // Queues to subscribe to
 var queues = new Map();
 queues.set('telegram', '*.message.telegram');
@@ -20,44 +19,27 @@ const start = () => {
   });
 };
 
-const getUrl = request.get(config.foobot_core_url + '/info/webhook');
+const getUrl = request.get(config.foobot_core_url + '/info/webhook').then(body => {
+  body = JSON.parse(body);
+  if(body.url) resolve(body);
+  else throw 'no url';
+});
 
-retry(getUrl, 10, 1000)
+retry(getUrl, 'get url from core', 10, 5000)
   .then(telegram.setWebhook)
-  .then(() => start())
-
-function retry(promise, attempts, interval) {
-  return new Promise((resolve, reject) => {
-    promise
-      .then(body => {
-        body = JSON.parse(body);
-        if(body.url) resolve(body);
-        else throw 'no url';
-        resolve(body);
-      })
-      .catch(err => {
-        console.log(err)
-        if(attempts === 0) console.warn('Could not connect to foobot');
-        else 
-          setTimeout(() => {
-            console.log(`Error connecting to foobot: attempt ${11-attempts}/10`);
-            return retry(promise, --attempts, interval).then(resolve);
-          }, interval);
-      });
-  });
-}
+  .then(() => start());
 
 /**
  * Retry a promise
  */
-// function retry(promise, message, attempts = 5, interval = 500) {
-//   return new Promise((resolve, reject) => {
-//     promise.then(resolve).catch(err => {
-//       if(attempts === 0) throw new Error('Max retries reached for ' + message);
-//       else setTimeout(() => {
-//         console.log('retry ' + message);
-//         return retry(promise, message, --attempts, interval).then(resolve);
-//       }, interval);
-//     });
-//   });
-// }
+function retry(promise, message, attempts = 5, interval = 500) {
+  return new Promise((resolve, reject) => {
+    promise.then(resolve).catch(err => {
+      if(attempts === 0) throw new Error('Max retries reached for ' + message);
+      else setTimeout(() => {
+        console.log('retry ' + message);
+        return retry(promise, message, --attempts, interval).then(resolve);
+      }, interval);
+    });
+  });
+}
