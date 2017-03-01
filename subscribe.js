@@ -4,8 +4,6 @@ const
   telegram = require('./telegram'),
   queue = process.argv[2];
 
-console.dir(config)
-
 rabbit.connect.then(connection => {
   return connection.createChannel().then(channel => {
     console.log(`Subscriber started for ${queue} queue`);

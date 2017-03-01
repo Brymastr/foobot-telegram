@@ -19,23 +19,19 @@ const start = () => {
   });
 };
 
-const getUrl = request.get(config.foobot_core_url + '/info/webhook').then(body => {
-  body = JSON.parse(body);
-  if(body.url) resolve(body);
-  else throw 'no url';
-});
+const getUrl = () => request.get(config.foobot_core_url + '/info/webhook');
 
 retry(getUrl, 'get url from core', 10, 5000)
-  .then(telegram.setWebhook)
-  .then(() => start());
+.then(body => telegram.setWebhook(JSON.parse(body)))
+.then(() => start());
 
 /**
  * Retry a promise
  */
 function retry(promise, message, attempts = 5, interval = 500) {
   return new Promise((resolve, reject) => {
-    promise.then(resolve).catch(err => {
-      console.log(err)
+    promise().then(resolve).catch(err => {
+      console.log(err.message);
       if(attempts === 0) throw new Error('Max retries reached for ' + message);
       else setTimeout(() => {
         console.log('retry ' + message);
