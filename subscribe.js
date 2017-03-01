@@ -6,7 +6,7 @@ const
 
 console.dir(config)
 
-rabbit.connect().then(connection => {
+rabbit.connect.then(connection => {
   return connection.createChannel().then(channel => {
     console.log(`Subscriber started for ${queue} queue`);
     channel.consume(queue, message => {

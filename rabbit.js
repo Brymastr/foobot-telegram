@@ -1,5 +1,5 @@
 const 
-  config = require('./config'),
+  config = require('./config')(),
   rabbit = require('amqplib');
 
 exports.init = queues => {
@@ -33,7 +33,7 @@ exports.pub = (connection, routingKey, message) => {
   // console.log('Publish message.', routingKey, message.text);
   return new Promise((resolve, reject) => {
     connection.createChannel().then(channel => {
-      channel.publish(config.rabbit_exchange_name, routingKey, new Buffer(JSON.stringify(message)));
+      channel.publish(config.rabbit_exchange, routingKey, new Buffer(JSON.stringify(message)));
       return channel.close();
     }).then(resolve);
   });
