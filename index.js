@@ -24,8 +24,8 @@ const checkExchangePromise = () => new Promise((resolve, reject) => {
 const createQueuesPromise = (channel, name, key) => {
   return new Promise(resolve => {
     channel.assertQueue(name)
-      .then(queue => channel.bindQueue(queue.queue, config.rabbit_exchange, key)
-      .then(resolve));
+      .then(queue => channel.bindQueue(queue.queue, config.rabbit_exchange, key))
+      .then(resolve);
   });
 };
 
