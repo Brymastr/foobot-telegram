@@ -10,16 +10,26 @@ const
 const queues = new Map();
 queues.set('telegram', '*.message.telegram');
 
+const checkExchangePromise = () => new Promise((resolve, reject) => {
+  rabbit.connect(config.rabbit_url).then(conn => {
+    return conn.createChannel().then(channel => {
+      return channel.checkExchange(config.rabbit_exchange)
+        .then(ok => channel.close());
+    })
+    .then(() => conn.close())
+    .then(resolve);
+  });
+});
+
 const createQueuesPromise = (channel, name, key) => {
   return new Promise(resolve => {
     channel.assertQueue(name)
-      .then(queue => retry(channel.bindQueue(queue.queue, config.rabbit_exchange, key),  'bind queue ' + queue.queue, 5, 5000))
-      .then(resolve);
+      .then(queue => channel.bindQueue(queue.queue, config.rabbit_exchange, key)
+      .then(resolve));
   });
 };
 
 const queuePromise = () => new Promise((resolve, reject) => {
-  console.log('INSIDE queuePromise')
   rabbit.connect(config.rabbit_url).then(conn => {
     return conn.createChannel().then(channel => {
       let promises = [];
@@ -44,16 +54,17 @@ const start = () => {
   });
 };
 
-retry(queueConnectionPromise, 'connect to rabbit at ' + config.rabbit_url, 10, 15000).then(conn => {
-
-  const promises = [
-    retry(queuePromise, 'create queues'),
-    retry(getUrl, 'get url from core', 10, 5000)
-  ];
+retry(queueConnectionPromise, 'connect to rabbit at' + config.rabbit_url, 10, 15000)
+  .then(conn => retry(checkExchangePromise, 'check exchange', 5, 5000))
+  .then(exchange => {
+    const promises = [
+      retry(queuePromise, 'create queues'),
+      retry(getUrl, 'get url from core', 10, 5000)
+    ];
+    
+    Promise.all(promises).then(() => start());
+  });
   
-  Promise.all(promises).then(() => start());
-});
-
 /**
  * Retry a promise
  */
