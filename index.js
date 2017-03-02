@@ -11,19 +11,23 @@ const queues = new Map();
 queues.set('telegram', '*.message.telegram');
 
 const checkExchangePromise = () => new Promise((resolve, reject) => {
-  console.log('checkExchangePromise')
-  rabbit.connect(config.rabbit_url).then(conn => {
-    return conn.createChannel().then(channel => {
-      return channel.checkExchange(config.rabbit_exchange)
-        .then(ok => channel.close());
+  var connection;
+  rabbit.connect(config.rabbit_url)
+    .then(conn => {
+      connection = conn;
+      return conn.createChannel();
     })
-    .then(() => conn.close())
-    .then(resolve);
-  });
+    .then(channel => {
+      channel.on('error', reject);
+      return channel.checkExchange(config.rabbit_exchange).then(() => {
+        channel.close();
+        connection.close();
+        resolve();
+      }).catch(() => {});
+    })
 });
 
 const createQueuesPromise = (channel, name, key) => {
-  console.log('createQueuesPromise')
   return new Promise(resolve => {
     channel.assertQueue(name)
       .then(queue => channel.bindQueue(queue.queue, config.rabbit_exchange, key))
@@ -32,7 +36,6 @@ const createQueuesPromise = (channel, name, key) => {
 };
 
 const queuePromise = () => new Promise((resolve, reject) => {
-  console.log('queuePromise')
   rabbit.connect(config.rabbit_url).then(conn => {
     return conn.createChannel().then(channel => {
       let promises = [];
@@ -46,27 +49,21 @@ const queuePromise = () => new Promise((resolve, reject) => {
   });
 });
 
-const queueConnectionPromise = () => {
-  console.log('queueConnectionPromise');
-  return rabbit.connect(config.rabbit_url);
-};
+const queueConnectionPromise = () => rabbit.connect(config.rabbit_url);
 
-const getUrl = () => {
-  console.log('getUrl');
-  return request.get(config.foobot_core_url + '/info/webhook');
-};
+const getUrl = () => request.get(config.foobot_core_url + '/info/webhook');
 
 const start = () => {
-  console.log('start')
   queues.forEach((value, key) => {
     console.log(`Subscriber starting for ${key} queue`);
     fork(__dirname + '/subscribe', [key], {silent: false, stdio: 'pipe'});
   });
 };
 
-retry(queueConnectionPromise, 'connect to rabbit at' + config.rabbit_url, 10, 15000)
+retry(queueConnectionPromise, 'connect to rabbit at' + config.rabbit_url, 10, 5000)
   .then(conn => retry(checkExchangePromise, 'check exchange', 5, 5000))
   .then(exchange => {
+    
     const promises = [
       queuePromise,
       getUrl
