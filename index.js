@@ -19,6 +19,7 @@ const createQueuesPromise = (channel, name, key) => {
 };
 
 const queuePromise = () => new Promise((resolve, reject) => {
+  console.log('INSIDE queuePromise')
   rabbit.connect(config.rabbit_url).then(conn => {
     return conn.createChannel().then(channel => {
       let promises = [];
@@ -44,13 +45,15 @@ const start = () => {
 };
 
 retry(queueConnectionPromise, 'connect to rabbit at ' + config.rabbit_url, 10, 15000).then(conn => {
-  console.log('CONNECTION MADE ' + conn)
-  const promises = [
-    retry(queuePromise, 'create queues'),
-    retry(getUrl, 'get url from core', 10, 5000)
-  ];
+  console.log('CONNECTION MADE')
+  console.dir(conn)
+
+  // const promises = [
+  //   retry(queuePromise, 'create queues'),
+  //   retry(getUrl, 'get url from core', 10, 5000)
+  // ];
   
-  Promise.all(promises).then(() => start());
+  // Promise.all(promises).then(() => start());
 });
 
 /**
