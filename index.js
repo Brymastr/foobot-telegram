@@ -7,7 +7,7 @@ const
   request = require('request-promise');
 
 // Queues to subscribe to
-var queues = new Map();
+const queues = new Map();
 queues.set('telegram', '*.message.telegram');
 
 const createQueuesPromise = (channel, name, key) => {
@@ -38,23 +38,19 @@ const getUrl = () => request.get(config.foobot_core_url + '/info/webhook');
 
 const start = () => {
   queues.forEach((value, key) => {
-    console.log(`Subscriber starting for ${key} queue`)
+    console.log(`Subscriber starting for ${key} queue`);
     fork(__dirname + '/subscribe', [key], {silent: false, stdio: 'pipe'});
   });
 };
 
 retry(queueConnectionPromise, 'connect to rabbit at ' + config.rabbit_url, 10, 15000).then(conn => {
+  console.log('CONNECTION MADE ' + conn)
   const promises = [
     retry(queuePromise, 'create queues'),
     retry(getUrl, 'get url from core', 10, 5000)
   ];
   
-  Promise.all(promises)
-    .then(results => {
-      results.push(conn);
-      return createResultObject(results)
-    })
-    .then(() => start());
+  Promise.all(promises).then(() => start());
 });
 
 /**
