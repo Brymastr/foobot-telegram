@@ -4,7 +4,7 @@ const
   rabbit = require('amqplib'),
   telegram = require('./telegram'),
   fork = require('child_process').fork,
-  request = require('request-promise');
+  request = require('request-promise-native');
 
 // Queues to subscribe to
 const queues = new Map();
@@ -57,13 +57,12 @@ const start = () => {
 retry(queueConnectionPromise, 'connect to rabbit at' + config.rabbit_url, 10, 15000)
   .then(conn => retry(checkExchangePromise, 'check exchange', 5, 5000))
   .then(exchange => {
-    console.log('EXCHANGE EXISTS')
     const promises = [
       queuePromise,
       getUrl
     ];
     
-    Promise.all(promises.map(p => retry(p, '', 20, 1000))).then(() => start());
+    // Promise.all(promises.map(p => retry(p, '', 20, 1000))).then(() => start());
   });
   
 /**
