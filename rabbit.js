@@ -2,30 +2,6 @@ const
   config = require('./config')(),
   rabbit = require('amqplib');
 
-exports.init = queues => {
-  return new Promise((resolve, reject) => {
-    this.connect
-      .then(connection => connection.createChannel())
-      .then(channel => {
-        let promises = [];
-        queues.forEach((routeKey, queueName) => {
-          promises.push(this.queuePromise(channel, queueName, routeKey));
-        });
-        return Promise.all(promises).then(() => channel);
-      })
-      .then(channel => channel.close())
-      .then(resolve);
-  });
-}
-
-this.queuePromise = (channel, name, key) => {
-  return new Promise(resolve => {
-    channel.assertQueue(name)
-      .then(queue => channel.bindQueue(queue.queue, config.rabbit_exchange, key)
-      .then(resolve));
-  });
-};
-
 exports.connect = rabbit.connect(config.rabbit_url);
 
 // Publish to RabbitMQ with a given topic

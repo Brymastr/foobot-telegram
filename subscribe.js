@@ -4,7 +4,7 @@ const
   telegram = require('./telegram'),
   queue = process.argv[2];
 
-rabbit.connect.then(connection => {
+rabbit.connect(config.rabbit_url).then(connection => {
   return connection.createChannel().then(channel => {
     console.log(`Subscriber started for ${queue} queue`);
     channel.consume(queue, message => {
