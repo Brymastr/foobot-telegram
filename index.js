@@ -13,8 +13,8 @@ queues.set('telegram', '*.message.telegram');
 const createQueuesPromise = (channel, name, key) => {
   return new Promise(resolve => {
     channel.assertQueue(name)
-      .then(queue => channel.bindQueue(queue.queue, config.rabbit_exchange, key)
-      .then(resolve));
+      .then(queue => retry(channel.bindQueue(queue.queue, config.rabbit_exchange, key),  'bind queue ' + queue.queue, 5, 5000))
+      .then(resolve);
   });
 };
 
@@ -45,15 +45,13 @@ const start = () => {
 };
 
 retry(queueConnectionPromise, 'connect to rabbit at ' + config.rabbit_url, 10, 15000).then(conn => {
-  console.log('CONNECTION MADE')
-  console.dir(conn)
 
-  // const promises = [
-  //   retry(queuePromise, 'create queues'),
-  //   retry(getUrl, 'get url from core', 10, 5000)
-  // ];
+  const promises = [
+    retry(queuePromise, 'create queues'),
+    retry(getUrl, 'get url from core', 10, 5000)
+  ];
   
-  // Promise.all(promises).then(() => start());
+  Promise.all(promises).then(() => start());
 });
 
 /**
@@ -62,7 +60,7 @@ retry(queueConnectionPromise, 'connect to rabbit at ' + config.rabbit_url, 10, 1
 function retry(promise, message, attempts = 5, interval = 500) {
   return new Promise((resolve, reject) => {
     promise().then(resolve).catch(err => {
-      console.log(err.message);
+      console.log('errorrrrr: ' + err.message);
       if(attempts === 0) throw new Error('Max retries reached for ' + message);
       else setTimeout(() => {
         console.log('retry ' + message);
