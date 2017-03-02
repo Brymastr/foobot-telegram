@@ -59,11 +59,11 @@ retry(queueConnectionPromise, 'connect to rabbit at' + config.rabbit_url, 10, 15
   .then(exchange => {
     console.log('EXCHANGE EXISTS')
     const promises = [
-      retry(queuePromise, 'create queues'),
-      retry(getUrl, 'get url from core', 10, 5000)
+      queuePromise,
+      getUrl
     ];
     
-    Promise.all(promises).then(() => start());
+    Promise.all(promises.map(p => retry(p, '', 20, 1000))).then(() => start());
   });
   
 /**
