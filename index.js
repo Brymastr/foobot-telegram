@@ -57,6 +57,7 @@ const start = () => {
 retry(queueConnectionPromise, 'connect to rabbit at' + config.rabbit_url, 10, 15000)
   .then(conn => retry(checkExchangePromise, 'check exchange', 5, 5000))
   .then(exchange => {
+    console.log('EXCHANGE EXISTS')
     const promises = [
       retry(queuePromise, 'create queues'),
       retry(getUrl, 'get url from core', 10, 5000)
