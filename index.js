@@ -24,7 +24,7 @@ const checkExchangePromise = () => new Promise((resolve, reject) => {
         connection.close();
         resolve();
       }).catch(() => {});
-    })
+    });
 });
 
 const createQueuesPromise = (channel, name, key) => {

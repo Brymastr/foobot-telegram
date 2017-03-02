@@ -1,5 +1,5 @@
 const
- request = require('request-promise'),
+ request = require('request-promise-native'),
  rabbit = require('./rabbit');
 
 // Send with typing
