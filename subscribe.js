@@ -1,6 +1,6 @@
 const
   config = require('./config')(),
-  rabbit = require('./rabbit'),
+  rabbit = require('amqplib'),
   telegram = require('./telegram'),
   queue = process.argv[2];
 
