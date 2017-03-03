@@ -3,7 +3,7 @@ module.exports = () => {
   return config = {
     telegram_token: env.FOOBOT_TELEGRAM_TOKEN,
     db: env.FOOBOT_DB_CONN || 'mongdb://localhost',
-    rabbit_url: env.FOOBOT_RABBIT_QUEUE || 'amqp://localhost',
+    rabbit_url: env.FOOBOT_RABBIT_QUEUE,
     rabbit_exchange: 'foobot',
     rabbit_telegram_queue: 'telegram',
     rabbit_internal_queue: 'internal',
