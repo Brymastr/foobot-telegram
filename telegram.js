@@ -86,6 +86,7 @@ exports.process = (connection, message) => {
       this.send(message);
   } else {
     this.normalize(message).then(m => {
+      console.log('publish normalized')
       rabbit.pub(connection, config.rabbit_internal_queue, m);
     });
   }
