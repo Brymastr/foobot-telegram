@@ -16,7 +16,7 @@ exports.sendMessage = message => new Promise(resolve => {
     json: {
       chat_id: message.chat_id,
       text: message.response,
-      reply_markup: message.reply_markup,
+      reply_markup: message.keyboard,
       reply_to_message_id: message.reply_to,
       parse_mode: 'Markdown'
     }
@@ -100,7 +100,7 @@ exports.normalize = update => {
   };
   if(update.edited_message) {
     update = update.edited_message;
-    action = 'edit';
+    message.action = 'edit';
   }
   else if(update.message) update = update.message;
 
