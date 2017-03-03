@@ -1,6 +1,5 @@
 const 
   config = require('./config')(),
-  Message = require('./Message'),
   rabbit = require('amqplib'),
   telegram = require('./telegram'),
   fork = require('child_process').fork,
