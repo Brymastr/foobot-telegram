@@ -6,7 +6,6 @@ exports.connect = rabbit.connect(config.rabbit_url);
 
 // Publish to RabbitMQ with a given topic
 exports.pub = (connection, routingKey, message) => {
-  console.log('Publish message.', routingKey, message.text);
   return new Promise((resolve, reject) => {
     connection.createChannel().then(channel => {
       channel.publish(config.rabbit_exchange, routingKey, new Buffer(JSON.stringify(message)));

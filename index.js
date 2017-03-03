@@ -55,9 +55,9 @@ const getUrl = () => request.get(config.foobot_core_url + '/info/webhook');
 
 const start = () => {
   queues.forEach((value, key) => {
-    console.log(`Subscriber starting for ${key} queue`);
     fork(__dirname + '/subscribe', [key], {silent: false, stdio: 'pipe'});
   });
+  console.log('Startup complete');
 };
 
 retry(queueConnectionPromise, 'connect to rabbit at' + config.rabbit_url, 10, 5000)
@@ -78,10 +78,8 @@ retry(queueConnectionPromise, 'connect to rabbit at' + config.rabbit_url, 10, 50
 function retry(promise, message, attempts = 5, interval = 500) {
   return new Promise((resolve, reject) => {
     promise().then(resolve).catch(err => {
-      console.log('errorrrrr: ' + err.message);
       if(attempts === 0) throw new Error('Max retries reached for ' + message);
       else setTimeout(() => {
-        console.log('retry ' + message);
         return retry(promise, message, --attempts, interval).then(resolve);
       }, interval);
     });

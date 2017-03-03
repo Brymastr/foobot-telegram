@@ -4,7 +4,6 @@ const
 
 // Send with typing
 exports.send = message => new Promise(resolve => {
-  console.log('send message', message.text)
   this.sendTyping(message)
     .then(() => this.sendMessage(message))
     .then(resolve);
@@ -36,7 +35,7 @@ exports.sendTyping = message => new Promise((resolve, reject) => {
     let delay = Math.random() * 2;
     let timeout = (0.02 * length + delay) * 1000;
     setTimeout(resolve, timeout);
-  });  
+  });
 });
 
 exports.editMessage = (message, done) => {
@@ -80,7 +79,6 @@ exports.leaveChat = chat_id => new Promise((resolve, reject) => {
 });
 
 exports.process = (connection, message) => {
-  console.log(message);
   if(message._id) {
     if(message.response || message.keyboard.length > 0)
       this.send(message);
