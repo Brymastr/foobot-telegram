@@ -16,7 +16,7 @@ exports.sendMessage = message => new Promise(resolve => {
     json: {
       chat_id: message.chat_id,
       text: message.response,
-      reply_markup: message.keyboard,
+      // reply_markup: message.keyboard,
       reply_to_message_id: message.reply_to,
       parse_mode: 'Markdown'
     }
