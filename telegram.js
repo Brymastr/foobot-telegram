@@ -15,7 +15,11 @@ exports.sendMessage = message => new Promise(resolve => {
     json: {
       chat_id: message.chat_id,
       text: message.response,
-      // reply_markup: message.keyboard,
+      reply_markup: {
+        keyboard: makeKeyboard(message.keyboard),
+        resize_keyboard: true,
+        one_time_keyboard: true
+      },
       reply_to_message_id: message.reply_to,
       parse_mode: 'Markdown'
     }
@@ -23,6 +27,36 @@ exports.sendMessage = message => new Promise(resolve => {
   .then(resolve)
   .catch(console.warn);
 });
+
+function makeKeyboard(keyboard) {
+  return keyboard.map(makeButtons)
+}
+
+function makeButtons(keyboardRow) {
+  let response = [];
+  for(let j = 0; j < keyboardRow.length; j++) {
+    let currentButton = keyboardRow[j];
+    let button = {
+      text: currentButton.text
+    };
+    if(currentButton.data) button.callback_data = currentButton.data;
+    if(currentButton.url) button.url = currentButton.url;
+    switch(currentButton.type) {
+      case 'request_contact':
+        button.request_contact = true;
+        break;
+      case 'request_location':
+        button.request_location = true;
+        break;
+      case 'account_login':
+        button.url = currentButton.url;
+        break;
+      default:
+    }
+    response.push(button);
+  }
+  return response;
+}
 
 exports.sendTyping = message => new Promise((resolve, reject) => {
   request.post(`${config.telegram_url}${config.telegram_token}/sendChatAction`, {
@@ -38,19 +72,15 @@ exports.sendTyping = message => new Promise((resolve, reject) => {
   });
 });
 
-exports.editMessage = (message, done) => {
+exports.editMessage = message => new Promise(resolve => {
   request.post(`${config.telegram_url}${config.telegram_token}/editMessageText`, {
     json: {
       chat_id: message.chat_id,
       text: message.text,
-      reply_markup: message.reply_markup,
       parse_mode: 'Markdown'
     }
-  }, (err, response, body) => {
-    if(err) log.error(err);    
-    done(body);
-  });
-}
+  }).then(resolve);
+});
 
 // Set the webhook so that messages are sent to this api
 exports.setWebhook = address => new Promise((resolve, reject) => {
