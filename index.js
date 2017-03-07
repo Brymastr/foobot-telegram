@@ -56,20 +56,17 @@ const start = () => {
   queues.forEach((value, key) => {
     fork(__dirname + '/subscribe', [key], {silent: false, stdio: 'pipe'});
   });
-  console.log('Startup complete');
 };
 
 retry(queueConnectionPromise, 'connect to rabbit at' + config.rabbit_url, 10, 5000)
   .then(conn => retry(checkExchangePromise, 'check exchange', 5, 5000))
-  .then(exchange => {
-    
-    const promises = [
-      queuePromise,
-      getUrl
-    ];
-    
-    Promise.all(promises.map(p => retry(p, '', 20, 1000))).then(() => start());
-  });
+  .then(exchange => retry(queuePromise, 'create queues', 5, 500))
+  .then(() => retry(getUrl, 'get core foobot url', 10, 1500))
+  .then(address => {
+    let body = JSON.parse(address);
+    return telegram.setWebhook(body);
+  })
+  .then(() => start());
   
 /**
  * Retry a promise

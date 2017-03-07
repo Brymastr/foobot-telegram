@@ -20,7 +20,6 @@ exports.sendMessage = message => new Promise(resolve => {
         resize_keyboard: true,
         one_time_keyboard: true
       },
-      reply_to_message_id: message.reply_to,
       parse_mode: 'Markdown'
     }
   })
@@ -94,7 +93,7 @@ exports.setWebhook = address => new Promise((resolve, reject) => {
     console.log(`Telegram webhook set: ${url}`);
     resolve(body);
   }).catch(err => {
-    console.error(err);
+    console.error(err.message);
     reject(err);
   });
   
