@@ -15,12 +15,12 @@ exports.sendMessage = message => new Promise(resolve => {
     json: {
       chat_id: message.chat_id,
       text: message.response,
-      reply_markup: makeKeyboard(message.keyboard),
+      reply_markup: message.keyboard.length > 0 ? makeKeyboard(message.keyboard) : {},
       parse_mode: 'Markdown'
     }
   })
   .then(resolve)
-  .catch(console.warn);
+  .catch(err => console.warn(err.message));
 });
 
 function makeKeyboard(markup) {
