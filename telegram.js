@@ -15,11 +15,7 @@ exports.sendMessage = message => new Promise(resolve => {
     json: {
       chat_id: message.chat_id,
       text: message.response,
-      reply_markup: {
-        keyboard: makeKeyboard(message.keyboard),
-        resize_keyboard: true,
-        one_time_keyboard: true
-      },
+      reply_markup: makeKeyboard(message.keyboard),
       parse_mode: 'Markdown'
     }
   })
@@ -27,8 +23,17 @@ exports.sendMessage = message => new Promise(resolve => {
   .catch(console.warn);
 });
 
-function makeKeyboard(keyboard) {
-  return keyboard.map(makeButtons)
+function makeKeyboard(markup) {
+  let keyboard = {
+    resize_keyboard: true,
+    one_time_keyboard: true
+  };
+  if(markup[0][0].type === 'account_link') {
+    keyboard.inline_keyboard = markup.map(makeButtons);
+  } else {
+    keyboard.keyboard = markup.map(makeButtons);
+  }
+  return keyboard;
 }
 
 function makeButtons(keyboardRow) {
@@ -47,10 +52,9 @@ function makeButtons(keyboardRow) {
       case 'request_location':
         button.request_location = true;
         break;
-      case 'account_login':
+      case 'account_link':
         button.url = currentButton.url;
         break;
-      default:
     }
     response.push(button);
   }
