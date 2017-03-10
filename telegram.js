@@ -103,18 +103,18 @@ exports.setWebhook = address => new Promise((resolve, reject) => {
   
 });
 
-exports.leaveChat = chat_id => new Promise((resolve, reject) => {
+exports.leaveChat = chat_id => {
   request.post(`${config.telegram_url}${config.telegram_token}/leaveChat`, {
     json: { chat_id }
-  })
-    .then(resolve)
-    .catch(reject)
-});
+  });
+};
 
 exports.process = (connection, message) => {
-  if(message._id) {
-    if(message.response || message.keyboard.length > 0)
-      this.send(message);
+  if(message._id && (message.response || message.keyboard.length > 0)) {
+    this.send(message).then(() => {
+      if(message.action === 'leave chat')
+        this.leaveChat(message.chat_id);
+    });
   } else {
     this.normalize(message).then(m => {
       rabbit.pub(connection, 'internal.message.nlp', m);
