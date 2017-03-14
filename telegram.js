@@ -110,6 +110,9 @@ exports.leaveChat = chat_id => {
 };
 
 exports.process = (connection, message) => {
+  
+  console.log(message);
+
   if(message._id && (message.response || message.keyboard.length > 0)) {
     this.send(message).then(() => {
       if(message.action === 'leave chat')
