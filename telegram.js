@@ -109,18 +109,29 @@ exports.leaveChat = chat_id => {
   });
 };
 
-exports.process = (connection, message) => {
-  
-  if(message._id && (message.response || message.keyboard.length > 0)) {
-    this.send(message).then(() => {
-      if(message.action === 'leave chat')
-        this.leaveChat(message.chat_id);
-    });
-  } else {
-    this.normalize(message).then(m => {
-      rabbit.pub(connection, 'internal.message.nlp', m);
-    });
+exports.process = (connection, queueMessage) => {
+  let message = JSON.parse(message.content.toString());
+  let route = queueMessage.fields.routing_key.split('.')[0];
+
+  switch(route) {
+
+    case 'incoming':
+      this.normalize(message).then(m => {
+        rabbit.pub(connection, 'internal.message.nlp', m);
+      });
+      break;
+
+    case 'outgoing':
+      this.send(message).then(() => {
+        if(message.action === 'leave chat')
+          this.leaveChat(message.chat_id);
+      });
+      break;
+
+    default:
+      console.log('routing key not implemented');
   }
+  
 }
 
 
