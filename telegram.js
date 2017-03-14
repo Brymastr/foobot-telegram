@@ -110,7 +110,7 @@ exports.leaveChat = chat_id => {
 };
 
 exports.process = (connection, queueMessage) => {
-  let message = JSON.parse(message.content.toString());
+  let message = JSON.parse(queueMessage.content.toString());
   if(!queueMessage.fields.routingKey) return;
   let route = queueMessage.fields.routingKey.split('.')[0];
 
