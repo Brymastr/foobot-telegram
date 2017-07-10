@@ -1,13 +1,19 @@
 module.exports = () => {
   const env = process.env;
   return config = {
-    telegram_token: env.FOOBOT_TELEGRAM_TOKEN,
-    db: env.FOOBOT_DB_CONN || 'mongdb://localhost',
-    rabbit_url: env.FOOBOT_RABBIT_QUEUE,
-    rabbit_exchange: 'foobot',
-    rabbit_telegram_queue: 'telegram',
-    rabbit_internal_queue: 'internal',
-    telegram_url: 'https://api.telegram.org/bot',
-    foobot_core_url: env.FOOBOT_CORE_URL || 'http://localhost:9000'
+    PORT: 3101,
+    
+    AMQP_CONNECTION: 'amqp://localhost',
+    EXCHANGE_NAME: 'messages',
+    AMQP_CONNECTION_RETRY_INTERVAL: 3000,
+    AMQP_CONNECTION_ATTEMPTS: 3,
+    EXCHANGE_NAME: 'messages',
+    INCOMING_QUEUE_NAME: 'incoming_messages',
+    OUTGOING_QUEUE_NAME: 'outgoing_messages',
+    OUTGOING_ROUTE_KEY: 'message.telegram.outgoing',
+
+    TELEGRAM_URL: 'https://api.telegram.org/bot',
+    TELEGRAM_TOKEN: 'not gonna tell you'
   }
 };
+
