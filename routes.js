@@ -3,14 +3,21 @@ const
   router = new Router(),
   config = require('./config')(),
   uuid = require('uuid'),
-  telegram = require('./telegram');
+  telegram = require('./telegram'),
+  normalize = require('./normalize'),
+  queues = require('./queues');
 
 
 router.post('/webhook/telegram/:token', async ctx => {
-  console.log('message receieved')
-  if(ctx.params.token !== process.env.ROUTE_TOKEN)
+  if(ctx.params.token !== process.env.ROUTE_TOKEN) {
     ctx.status = 403;
-  ctx.status = 200;
+  } else {
+    const message = normalize(ctx.request.body);
+    if(message !== null)
+      queues.publish(message, config.INCOMING_ROUTE_PUBLISH_KEY, config.EXCHANGE_NAME);
+    
+    ctx.status = 200;
+  }
 });
 
 router.get('/token', async ctx => {

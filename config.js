@@ -8,10 +8,11 @@ module.exports = () => {
     EXCHANGE_NAME: 'messages',
     AMQP_CONNECTION_RETRY_INTERVAL: 3000,
     AMQP_CONNECTION_ATTEMPTS: 10,
-    EXCHANGE_NAME: 'messages',
     INCOMING_QUEUE_NAME: 'incoming_messages',
     OUTGOING_QUEUE_NAME: 'outgoing_messages',
     OUTGOING_ROUTE_KEY: 'message.telegram.outgoing',
+    INCOMING_ROUTE_KEY: 'message.*.incoming',
+    INCOMING_ROUTE_PUBLISH_KEY: 'message.telegram.incoming',
 
     TELEGRAM_URL: 'https://api.telegram.org/bot',
     TELEGRAM_TOKEN: env.TELEGRAM_TOKEN
