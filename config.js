@@ -2,6 +2,7 @@ module.exports = () => {
   const env = process.env;
   return config = {
     PORT: 3101,
+    URL: env.FOOBOT_TELEGRAM_URL,
     
     AMQP_CONNECTION: 'amqp://localhost',
     EXCHANGE_NAME: 'messages',

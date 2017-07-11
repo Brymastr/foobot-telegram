@@ -8,6 +8,7 @@
     "koa": "^2.3.0",
     "koa-bodyparser": "^4.2.0",
     "koa-router": "^7.2.1",
+    "ngrok": "^2.2.14",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.4",
     "uuid": "^3.1.0"
