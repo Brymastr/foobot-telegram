@@ -24,7 +24,8 @@ function text(update) {
     date: update.message.date,
     user_id: update.message.from.id,
     group_id: is_group ? update.message.chat.id : null,
-    is_group
+    is_group,
+    platform: 'telegram'
   }
 }
 
