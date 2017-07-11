@@ -1,7 +1,11 @@
 const
- request = require('request-promise-native'),
- rabbit = require('./rabbit'),
- denormalize = require('./denormalize');
+  request = require('request-promise-native'),
+  rabbit = require('./rabbit'),
+  denormalize = require('./denormalize'),
+  uuid = require('uuid'),
+  config = require('./config')(),
+  { promisify } = require('util'),
+  ngrok = promisify(require('ngrok').connect);
 
 
 exports.send = async function(message) {
@@ -48,8 +52,7 @@ exports.editMessage = async function(message) {
 exports.setWebhook = async function(address) {
   const urlOfThisService = `${address.url}/webhook/telegram/${address.route_token}`;
   const telegramUrl = `${config.TELEGRAM_URL}${config.TELEGRAM_TOKEN}/setWebhook?allowed_updates=["message", "edited_message"]`;
-
-  const response = await request.post(telegramUrl, { formData: { urlOfThisService }});
+  const response = await request.post(telegramUrl, { formData: { url: urlOfThisService }});
   console.log(`Telegram webhook set: ${urlOfThisService}`);
   return response;
 };
@@ -57,4 +60,14 @@ exports.setWebhook = async function(address) {
 exports.leaveChat = async function(chat_id) {
   const url = `${config.TELEGRAM_URL}${config.TELEGRAM_TOKEN}/leaveChat`
   return await request.post(url, { json: { chat_id } });
+};
+
+exports.generateToken = function() {
+  return uuid.v4();
+};
+
+exports.resetUrl = function() {
+  const url = 'https://telegram.foobot.dorsaydevelopment.ca';
+  process.env.URL = url;
+  return url;
 };

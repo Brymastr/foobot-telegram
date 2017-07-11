@@ -3,26 +3,36 @@ const
   router = new Router(),
   config = require('./config')(),
   uuid = require('uuid'),
-  { promisify } = require('util');
-  ngrok = promisify(require('ngrok').connect);
+  telegram = require('./telegram');
 
-const ROUTE_TOKEN = uuid.v4();
-if(config.URL === undefined) {
-  ngrok().then(url => config.URL = url);
-}
 
 router.post('/webhook/telegram/:token', async ctx => {
-  if(ctx.params.token !== ROUTE_TOKEN)
+  console.log('message receieved')
+  if(ctx.params.token !== process.env.ROUTE_TOKEN)
     ctx.status = 403;
-  ctx.body = 'get messages';
+  ctx.status = 200;
 });
 
 router.get('/token', async ctx => {
-  ctx.body = ROUTE_TOKEN;
+  ctx.body = process.env.ROUTE_TOKEN;
+});
+
+router.post('/token', async ctx => {
+  const token = telegram.generateToken();
+  process.env.ROUTE_TOKEN = token;
+  ctx.body = token;
 });
 
 router.get('/url', async ctx => {
-  ctx.body = config.URL;
+  ctx.body = process.env.URL;
+});
+
+router.post('/resetUrl', async ctx => {
+  const url = telegram.resetUrl();
+  const route_token = telegram.generateToken();
+  process.env.ROUTE_TOKEN = route_token;
+  await telegram.setWebhook({ url, route_token });
+  ctx.body = `${url}/webhook/telegram/${route_token}`
 });
 
 module.exports = router.routes();
