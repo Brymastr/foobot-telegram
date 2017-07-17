@@ -31,7 +31,7 @@ router.post('/token', async ctx => {
 });
 
 router.get('/url', async ctx => {
-  ctx.body = process.env.URL;
+  ctx.body = process.env.FOOBOT_TELEGRAM_URL;
 });
 
 router.post('/resetUrl', async ctx => {
