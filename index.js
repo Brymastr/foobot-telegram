@@ -19,7 +19,7 @@ function connect(func, attempts, interval) {
     try {
       resolve(await func());
     } catch(err) {
-      console.error(err)
+      // console.error(err)
       if(attempts === 1) {
         reject(new Error('Max connection attempts reached'));
         return;
