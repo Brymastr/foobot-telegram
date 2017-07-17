@@ -36,7 +36,7 @@ async function main() {
   const amqpConnection = await connect(queues.setup, config.AMQP_CONNECTION_ATTEMPTS, config.AMQP_CONNECTION_RETRY_INTERVAL);
   process.env.ROUTE_TOKEN = telegram.generateToken();
   try {
-    if(process.env.URL === undefined || process.env.URL === null) process.env.URL = await ngrok(config.PORT);
+    if(process.env.FOOBOT_TELEGRAM_URL === undefined || process.env.FOOBOT_TELEGRAM_URL === null) process.env.FOOBOT_TELEGRAM_URL = await ngrok(config.PORT);
   } catch(err) {
     console.log(err);
   }
@@ -52,7 +52,7 @@ async function main() {
   );
 
   await telegram.setWebhook({
-    url: process.env.URL,
+    url: process.env.FOOBOT_TELEGRAM_URL,
     route_token: process.env.ROUTE_TOKEN
   });
 
