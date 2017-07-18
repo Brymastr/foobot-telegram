@@ -42,4 +42,13 @@ router.post('/resetUrl', async ctx => {
   ctx.body = `${url}/webhook/telegram/${route_token}`
 });
 
+router.post('/sendMessage', async ctx => {
+  const { id, message } = ctx.request.body;
+
+  await telegram.sendMessage({
+    chat_id: id,
+    text: message
+  });
+});
+
 module.exports = router.routes();
