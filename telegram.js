@@ -1,7 +1,5 @@
 const
   request = require('request-promise-native'),
-  rabbit = require('./rabbit'),
-  denormalize = require('./denormalize'),
   uuid = require('uuid'),
   config = require('./config')(),
   { promisify } = require('util'),
@@ -12,12 +10,11 @@ exports.send = async function(message) {
   const delay = calculateTypingTime(message.text.length);
   await sendTyping(message.chat_id);
   setTimeout(async () => {
-    await sendMessage(message);
+    await this.sendMessage(message);
   }, delay);
 };
 
-exports.sendMessage = async function(normalizedMessage) {
-  const message = denormalize(normalizedMessage);
+exports.sendMessage = async function(message) {
   const url = `${config.TELEGRAM_URL}${config.TELEGRAM_TOKEN}/sendMessage`;
   return await request.post(url, { json: {
     chat_id: message.chat_id,
@@ -68,6 +65,6 @@ exports.generateToken = function() {
 
 exports.resetUrl = function() {
   const url = 'https://telegram.foobot.dorsaydevelopment.ca';
-  process.env.URL = url;
+  process.env.TELEGRAM_FOOBOT_URL = url;
   return url;
 };

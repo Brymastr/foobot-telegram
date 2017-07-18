@@ -33,14 +33,13 @@ exports.consume = async function(queueName, exchangeName, routeKey, func) {
 
   channel.consume(queueName, async message => {
     const m = JSON.parse(message.content.toString());
-    console.log(`read: ${m}`);
 
     try {
       await func(m);
-      message.ack();
+      channel.ack(message);
     } catch(err) {
       console.error(err);
-      message.nack();
+      channel.nack(message);      
     }
 
   });

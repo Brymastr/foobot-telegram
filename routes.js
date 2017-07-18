@@ -39,7 +39,7 @@ router.post('/resetUrl', async ctx => {
   const route_token = telegram.generateToken();
   process.env.ROUTE_TOKEN = route_token;
   await telegram.setWebhook({ url, route_token });
-  ctx.body = `${url}/webhook/telegram/${route_token}`
+  ctx.body = `${url}/webhook/telegram/${route_token}`;
 });
 
 router.post('/sendMessage', async ctx => {

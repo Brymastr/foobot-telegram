@@ -33,7 +33,7 @@ function connect(func, attempts, interval) {
 
 async function main() {
 
-  const amqpConnection = await connect(queues.setup, config.AMQP_CONNECTION_ATTEMPTS, config.AMQP_CONNECTION_RETRY_INTERVAL);
+  await connect(queues.setup, config.AMQP_CONNECTION_ATTEMPTS, config.AMQP_CONNECTION_RETRY_INTERVAL);
   process.env.ROUTE_TOKEN = telegram.generateToken();
   try {
     if(process.env.FOOBOT_TELEGRAM_URL === undefined || process.env.FOOBOT_TELEGRAM_URL === null) process.env.FOOBOT_TELEGRAM_URL = await ngrok(config.PORT);
@@ -48,7 +48,7 @@ async function main() {
     config.OUTGOING_QUEUE_NAME,
     config.EXCHANGE_NAME,
     config.OUTGOING_ROUTE_KEY,
-    telegram.send
+    telegram.send.bind(telegram)
   );
 
   await telegram.setWebhook({
