@@ -15,7 +15,9 @@ module.exports = () => {
     INCOMING_ROUTE_PUBLISH_KEY: 'message.telegram.incoming',
 
     TELEGRAM_URL: 'https://api.telegram.org/bot',
-    TELEGRAM_TOKEN: env.TELEGRAM_TOKEN
+    TELEGRAM_TOKEN: env.TELEGRAM_TOKEN,
+
+    NGROK_TOKEN: env.NGROK_TOKEN || '6Vcg38cCn34fo9T1maWYj_6nuWaLy45rLQrjsnKNdvb'
   }
 };
 
