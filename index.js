@@ -37,7 +37,6 @@ async function main() {
   process.env.ROUTE_TOKEN = telegram.generateToken();
   try {
     if(process.env.FOOBOT_TELEGRAM_URL === undefined || process.env.FOOBOT_TELEGRAM_URL === null) {
-      
       process.env.FOOBOT_TELEGRAM_URL = await ngrok({ addr: config.PORT, authtoken: config.NGROK_TOKEN });
     }
   } catch(err) {

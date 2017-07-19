@@ -25,7 +25,12 @@ function text(update) {
     user_id: update.message.from.id,
     group_id: is_group ? update.message.chat.id : null,
     is_group,
-    platform: 'telegram'
+    platform: 'telegram',
+    user_info: {  // This part isn't saved in the messages service, only in the users service
+      first_name: update.message.from.first_name,
+      last_name: update.message.from.last_name,
+      username: update.message.from.username
+    }
   }
 }
 

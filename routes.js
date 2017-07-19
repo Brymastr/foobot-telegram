@@ -9,7 +9,7 @@ const
 
 
 router.post('/webhook/telegram/:token', async ctx => {
-  console.log(ctx.request.body.message.text)
+  console.log(ctx.request.body.message.text);
   if(ctx.params.token !== process.env.ROUTE_TOKEN) {
     ctx.status = 403;
   } else {
