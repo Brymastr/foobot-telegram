@@ -35,6 +35,10 @@ router.get('/url', async ctx => {
   ctx.body = process.env.FOOBOT_TELEGRAM_URL;
 });
 
+router.get('/name', async ctx => {
+  ctx.body = process.env.BOT_NAME;
+});
+
 router.post('/resetUrl', async ctx => {
   const url = telegram.resetUrl();
   const route_token = telegram.generateToken();

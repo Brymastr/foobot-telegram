@@ -31,7 +31,7 @@ describe('normalize', function() {
   describe('#text()', function() {
     const text = normalize.__get__('text');
 
-    it(`should return a valid normalized message if message is not from a group`, function() {
+    it(`should return a valid normalized message if text message is not from a group`, function() {
       const message = {
         update_id: 124559694,
         message: { 
@@ -73,7 +73,7 @@ describe('normalize', function() {
       assert.deepEqual(expected, response);
     });
 
-     it(`should return a valid normalized message if message is from a group`, function() {
+    it(`should return a valid normalized message if text message is from a group`, function() {
       const message = {
         update_id: 124559694,
         message: { 
@@ -95,7 +95,7 @@ describe('normalize', function() {
           date: 1501003052,
           text: 'hey'
         }
-      };
+        };
 
       const expected = {
         text: 'hey',

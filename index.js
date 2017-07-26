@@ -45,7 +45,6 @@ async function main() {
   }
   app.listen(config.PORT);
   
-
   // Subscribe to messages to be sent to Telegram
   queues.consume(
     config.OUTGOING_QUEUE_NAME,
@@ -58,6 +57,11 @@ async function main() {
     url: process.env.FOOBOT_TELEGRAM_URL,
     route_token: process.env.ROUTE_TOKEN
   });
+
+  const meInfo = await telegram.getMe();
+  process.env.BOT_NAME = meInfo.name;
+  process.env.BOT_USERNAME = meInfo.username;
+  process.env.BOT_ID = meInfo.id;
 
   console.log('telegram service ready');
 }

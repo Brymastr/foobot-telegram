@@ -68,3 +68,13 @@ exports.resetUrl = function() {
   process.env.TELEGRAM_FOOBOT_URL = url;
   return url;
 };
+
+exports.getMe = async function() {
+  const url = `${config.TELEGRAM_URL}${config.TELEGRAM_TOKEN}/getMe`;
+  const response = JSON.parse(await request.get(url));
+  return {
+    id: response.result.id,
+    name: response.result.first_name,
+    username: response.result.username
+  }
+};
