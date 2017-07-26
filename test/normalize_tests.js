@@ -66,6 +66,10 @@ describe('normalize', function() {
           first_name: 'Brycen',
           last_name: 'Dorsay',
           username: 'bbbbbbb'
+        },
+        bot_info: {
+          name: undefined,
+          id: undefined
         }
       }
 
@@ -108,6 +112,10 @@ describe('normalize', function() {
           first_name: 'Brycen',
           last_name: 'Dorsay',
           username: 'bbbbbbb'
+        },
+        bot_info: {
+          name: undefined,
+          id: undefined
         }
       }
 
