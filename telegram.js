@@ -20,7 +20,7 @@ exports.sendMessage = async function(message) {
     chat_id: message.chat_id,
     text: message.text,
     // reply_markup: message.keyboard.length > 0 ? makeKeyboard(message.keyboard) : {},
-    parse_mode: 'Markdown'
+    // parse_mode: 'Markdown'
   }});
 };
 
